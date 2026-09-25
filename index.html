@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>De-para SRA × Buk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F4F6F5; --surface:#FFFFFF; --ink:#16232A; --muted:#5A6A70; --line:#DCE3E1;
+  --accent:#0B6B69; --accent-soft:#E0F0EE;
+  --ok:#2E7D4F; --ok-bg:#E3F3E8;
+  --fmt:#9A6400; --fmt-bg:#FBF0D9;
+  --cont:#B8392A; --cont-bg:#FBE4DF;
+  --aus:#4D5966; --aus-bg:#E6EAEE;
+  --old:#8A3B2F; --new:#0B6B69;
+  --display:"Schibsted Grotesk",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0F171A; --surface:#172226; --ink:#E6EEEC; --muted:#9AAAAE; --line:#2A383D;
+  --accent:#4FC2BC; --accent-soft:#16383A;
+  --ok:#6FCB94; --ok-bg:#173226; --fmt:#E8B55A; --fmt-bg:#3A2E14;
+  --cont:#F08A7A; --cont-bg:#3D1F1B; --aus:#B4C0CA; --aus-bg:#26313A;
+  --old:#F08A7A; --new:#4FC2BC;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F171A; --surface:#172226; --ink:#E6EEEC; --muted:#9AAAAE; --line:#2A383D;
+  --accent:#4FC2BC; --accent-soft:#16383A;
+  --ok:#6FCB94; --ok-bg:#173226; --fmt:#E8B55A; --fmt-bg:#3A2E14;
+  --cont:#F08A7A; --cont-bg:#3D1F1B; --aus:#B4C0CA; --aus-bg:#26313A;
+  --old:#F08A7A; --new:#4FC2BC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:15px;font-weight:700}
+p{margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lede{max-width:68ch;color:var(--muted);font-size:15px}
+header{display:flex;flex-direction:column;gap:14px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+section{display:flex;flex-direction:column;gap:18px}
+.sec-head{display:flex;flex-direction:column;gap:6px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.kpi .n{font-family:var(--display);font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.kpi .l{font-size:13px;font-weight:600}
+.kpi .d{font-size:12px;color:var(--muted)}
+.kpi.ok .n{color:var(--ok)} .kpi.fmt .n{color:var(--fmt)} .kpi.cont .n{color:var(--cont)} .kpi.aus .n{color:var(--aus)}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line)}
+.bar span{display:block;height:100%}
+
+/* before/after */
+.ba{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ba-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ba-card .row{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:baseline}
+.tag{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.v{font-family:var(--mono);font-size:13px;padding:3px 7px;border-radius:5px;word-break:break-word}
+.v.old{background:var(--cont-bg);color:var(--old)}
+.v.new{background:var(--accent-soft);color:var(--new)}
+.ba-card .why{font-size:12.5px;color:var(--muted)}
+
+/* legend + filters */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* table */
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:980px}
+th{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:12px 12px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.grp td{background:var(--bg);font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.02em;padding:10px 12px}
+.campo{font-weight:600}
+.req{color:var(--cont);font-weight:600;margin-left:2px}
+.col{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.flow{display:grid;grid-template-columns:1fr 18px 1fr;gap:6px;align-items:start}
+.arrow{color:var(--muted);text-align:center;padding-top:3px}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.fmt{background:var(--fmt-bg);color:var(--fmt)}
+.pill.cont{background:var(--cont-bg);color:var(--cont)} .pill.aus{background:var(--aus-bg);color:var(--aus)}
+.sol{font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.num{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+.nota{font-size:12.5px;color:var(--muted);margin-top:6px}
+.empty-sra{font-family:var(--mono);font-size:12.5px;color:var(--aus);font-style:italic}
+
+/* solutions */
+.sols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sol-card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.sol-card .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sol-card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:13px}
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:4px}
+
+@media (max-width:900px){.kpis,.sols{grid-template-columns:repeat(2,1fr)}.ba{grid-template-columns:1fr}}
+@media (max-width:480px){.kpis,.sols{grid-template-columns:1fr}}
+@media print{.filters{display:none}.wrap{padding-block:16px}.tbl-wrap{overflow:visible}table{min-width:0}th{position:static}tr{break-inside:avoid}section{break-inside:auto}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Item 4 · Base com campos divergentes</span>
+    <h1>De-para da base SRA (TOTVS) × importadores Buk</h1>
+    <p class="lede">Mapeamos cada campo exigido pelos importadores de <b>Funcionários</b> e <b>Trabalhos</b> da Buk e comparamos com a forma como a base SRA entrega a informação hoje. O objetivo é deixar claro onde surge o ajuste manual durante a importação e qual é o caminho para eliminá-lo.</p>
+    <div class="meta">
+      <span>Base analisada: <b>SRA (relatório de funcionários TOTVS)</b></span>
+      <span>Registros: <b>7.670</b> · ativos: <b>2.228</b></span>
+      <span>Colunas na SRA: <b>244</b></span>
+      <span>Quantidades de impacto consideram apenas os ativos</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">Visão geral</span><h2>Situação dos campos exigidos pela Buk</h2></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="bar" id="bar" aria-hidden="true"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">Onde nasce o retrabalho</span><h2>Como vem da SRA × como a Buk precisa</h2></div>
+    <div class="ba">
+      <div class="ba-card"><h3>Município</h3>
+        <div class="row"><span class="tag">SRA</span><span class="v old">SAO FRANCISCO DE ITA</span></div>
+        <div class="row"><span class="tag">Buk</span><span class="v new">São Francisco de Itabapoana</span></div>
+        <p class="why">Vem sem acento, em maiúsculas e cortado em 20 caracteres. Só 67 dos 2.228 ativos batem direto com a lista oficial.</p></div>
+      <div class="ba-card"><h3>Nome do colaborador</h3>
+        <div class="row"><span class="tag">SRA</span><span class="v old">MARIA APARECIDA DOS SANTOS OLI</span></div>
+        <div class="row"><span class="tag">Buk</span><span class="v new">Nome: Maria · Sobrenomes: Aparecida dos Santos Oliveira</span></div>
+        <p class="why">Coluna “Nome” limitada a 30 caracteres e sem separação entre nome e sobrenome. 447 ativos com nome diferente do completo.</p></div>
+      <div class="ba-card"><h3>Datas</h3>
+        <div class="row"><span class="tag">SRA</span><span class="v old">4/22/1979</span></div>
+        <div class="row"><span class="tag">Buk</span><span class="v new">1979-04-22</span></div>
+        <p class="why">Nascimento, admissão, RG, CTPS e término de contrato vêm em mês/dia/ano. A Buk exige ano-mês-dia.</p></div>
+      <div class="ba-card"><h3>Campos em código</h3>
+        <div class="row"><span class="tag">SRA</span><span class="v old">Est. Civil = S · Cd.Inst.RAIS = 45</span></div>
+        <div class="row"><span class="tag">Buk</span><span class="v new">Solteiro · Ensino médio completo</span></div>
+        <p class="why">Sexo, estado civil, escolaridade, nacionalidade, país, categoria e tipo de admissão chegam como código interno.</p></div>
+      <div class="ba-card"><h3>Endereço e RG</h3>
+        <div class="row"><span class="tag">SRA</span><span class="v old">R. SEM NOME · DIC/RJ</span></div>
+        <div class="row"><span class="tag">Buk</span><span class="v new">SEM NOME · DIC + RJ - Rio de Janeiro</span></div>
+        <p class="why">Tipo de logradouro repetido no endereço (2.109 ativos) e órgão emissor junto com a UF no mesmo campo.</p></div>
+      <div class="ba-card"><h3>Cargo e centro de custo</h3>
+        <div class="row"><span class="tag">SRA</span><span class="v old">196 · ELETRICISTA B</span></div>
+        <div class="row"><span class="tag">Buk</span><span class="v new">a195</span></div>
+        <p class="why">Códigos da SRA não correspondem aos da Buk. 81 cargos e 88 centros de custo dos ativos não têm correspondente.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">De-para completo</span><h2>Campo a campo</h2></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ok)"></i>Compatível: vai direto</span>
+      <span><i class="dot" style="background:var(--fmt)"></i>Ajuste de formato: dado certo, formato diferente</span>
+      <span><i class="dot" style="background:var(--cont)"></i>Divergência de conteúdo: dado incompleto, cortado ou inconsistente</span>
+      <span><i class="dot" style="background:var(--aus)"></i>Não existe na SRA</span>
+      <span><b class="req">*</b> obrigatório na Buk</span>
+    </div>
+    <div class="filters" role="group" aria-label="Filtrar por situação">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">Todos</button>
+      <button class="chip" id="f-fmt" data-f="fmt" aria-pressed="false">Ajuste de formato</button>
+      <button class="chip" id="f-cont" data-f="cont" aria-pressed="false">Divergência de conteúdo</button>
+      <button class="chip" id="f-aus" data-f="aus" aria-pressed="false">Não existe na SRA</button>
+      <button class="chip" id="f-ok" data-f="ok" aria-pressed="false">Compatível</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:15%">Campo Buk</th><th style="width:11%">Coluna SRA</th><th style="width:40%">Como vem → como a Buk precisa</th><th style="width:12%">Situação</th><th style="width:13%">Solução proposta</th><th style="width:9%;text-align:right">Ativos afetados</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">Próximos passos</span><h2>Caminhos para eliminar o ajuste manual</h2>
+      <p class="lede">Agrupamos as divergências por tipo de solução. A proposta detalhada de cada frente será apresentada no retorno.</p></div>
+    <div class="sols" id="sols"></div>
+  </section>
+
+  <footer>
+    <span>Análise feita sobre a base SRA enviada pelo cliente A+, comparada com as instruções dos importadores Buk de Funcionários e Trabalhos.</span>
+    <span>Ativo = colaborador sem situação “D” (demitido) na coluna Sit. Folha.</span>
+  </footer>
+</div>
+
+<script>
+const ST={ok:"Compatível",fmt:"Ajuste de formato",cont:"Divergência de conteúdo",aus:"Não existe na SRA"};
+const SOL={R:"Ajuste no relatório SRA",C:"Tabela de conversão",S:"Saneamento cadastral",I:"Informação complementar","-":"—"};
+// [campo, obrig, colunaSRA, vem, espera, status, solução, afetados, nota]
+const DATA=[
+ ["Funcionários"],
+ ["Número de Documento",1,"CPF","086.011.487-27","086.011.487-27","ok","S",2,"2 CPFs aparecem em mais de uma matrícula ativa."],
+ ["Matrícula",1,"P.I.S.","12345678901","12345678901","ok","S",11,"Na Buk, este campo recebe o PIS. 11 ativos sem PIS."],
+ ["Nome / Sobrenomes",1,"Nome","MARIA APARECIDA DOS SANTOS OLI","Maria | Aparecida dos Santos Oliveira","cont","R",447,"Coluna limitada a 30 caracteres. A coluna “Nome complet” traz o nome inteiro."],
+ ["Gênero",1,"Sexo","Masculino","M","fmt","C",2228,""],
+ ["Raça/Cor",1,"Raca/Cor","Parda","Parda","ok","-",0,""],
+ ["Grau de Instrução",1,"Cd.Inst.RAIS","45","Ensino médio completo","fmt","C",2228,"Significado dos códigos 65, 75 e 85 a confirmar."],
+ ["Nome Mãe",0,"Nome Mae","MARIA JOSE DA SILVA","MARIA JOSE DA SILVA","ok","S",8,"8 ativos sem nome da mãe."],
+ ["Nome Pai",0,"Nome Pai","NAO DECLARADO","(vazio)","fmt","S",5,""],
+ ["Tipos de deficiência",0,"Tp.Deficien","Fisica · Intelectual (Mental)","Física · Mental ou Intelectual","cont","C",36,"A Buk separa Mental e Intelectual."],
+ ["Nacionalidade",1,"Nacionalid.","10","BR","fmt","C",2228,""],
+ ["País de Nascimento",1,"Cod.Pais Ori","1058","BR","fmt","C",2228,"8 ativos sem país."],
+ ["Data de Nascimento",1,"Data Nasc.","4/22/1979","1979-04-22","fmt","R",2228,""],
+ ["Estado Civil",1,"Est. Civil","S · C · M · Q","Solteiro · Casado · ? · Separado","fmt","C",2228,"Código M (56 ativos) sem equivalente na Buk."],
+ ["CEP",1,"Cep","78580-000","78580-000","ok","S",7,"7 ativos sem CEP."],
+ ["Tipo de Logradouro",1,"Tipo Lograd","R","R","ok","-",12,"12 ativos sem tipo."],
+ ["Endereço",1,"Endereço","R. SEM NOME","SEM NOME","cont","R",2109,"Usar a coluna “Descr.Lograd”, que vem sem o tipo."],
+ ["Número",1,"NrLogradouro","S/N · SN · N/A · 0","S/N","cont","S",290,""],
+ ["Estado",1,"Estado","RJ","RJ - Rio de Janeiro","fmt","C",2228,""],
+ ["Município",1,"Municipio","SAO FRANCISCO DE ITA","São Francisco de Itabapoana","cont","R",2161,"79 não batem nem sem acento: nomes cortados, com erro (BELO HORIZNOTE) ou desatualizados (ITAPAGE → Itapajé)."],
+ ["Telefone",1,"DDD Celular + Num. Celular","21 | 971580827","5521971580827","fmt","R",2228,"169 celulares vazios, com 8 dígitos ou tamanho inválido."],
+ ["E-mail Corporativo",1,"Email Princ","nome@gmail.com","nome@empresa.com","aus","I",2228,"A SRA só traz e-mail pessoal. O corporativo será o login na Buk."],
+ ["Órgão Emissor do RG",0,"Org Emis RG","DIC/RJ","DIC","cont","R",2228,"Órgão e UF no mesmo campo. 58 ativos só com “/” e cerca de 230 com siglas fora do padrão (DGP, DET, SPT…)."],
+ ["UF Emissora do RG",0,"UF do RG","RJ","RJ - Rio de Janeiro","fmt","C",2228,"83 ativos sem UF."],
+ ["Data de Emissão do RG",0,"D t.Emis.RG","10/10/2010","2010-10-10","fmt","R",2228,""],
+ ["Número da CTPS",0,"Cart.Profis.","1234567","1234567","ok","-",0,""],
+ ["UF Emissora da CTPS",0,"UF Cart.Prof","RJ","RJ - Rio de Janeiro","fmt","C",2228,"831 ativos sem UF."],
+ ["Data de Emissão da CTPS",0,"Dt.Emi s.CTP","5/4/2020","2020-05-04","fmt","R",2228,""],
+ ["Código de Ficha",1,"Matricula","600810","600810","ok","-",0,""],
+ ["Admissão Empresa",1,"Data Admis.","7/8/2019","2019-07-08","fmt","R",2228,""],
+ ["Trabalhos"],
+ ["Número de Documento",1,"CPF","086.011.487-27","086.011.487-27","ok","-",0,""],
+ ["Empresa (nome ou CNPJ)",1,"Filial","100","100 Qualitec - Matriz: 16599987000142","fmt","C",2228,"Filial 102 (6 ativos) não está cadastrada na Buk."],
+ ["Data de início",1,"Data Admis.","7/8/2019","2019-07-08","fmt","R",2228,""],
+ ["Data Término de Contrato",1,"Dt Term Cont","6/16/2027","2027-06-16","fmt","R",6,"1 contrato determinado sem data e 5 indeterminados com data."],
+ ["Cláusula assecuratória",0,"Clau. Assec.","Sim (em contrato indeterminado)","(vazio)","cont","S",2126,"A cláusula só se aplica a contrato por prazo determinado."],
+ ["Categoria do trabalhador",1,"Categ. eSoci","101","Empregado - Geral…","fmt","C",2228,""],
+ ["Múltiplos Vínculos",1,"—",null,"Não possui múltiplos vínculos","aus","I",2228,""],
+ ["Tipo de Contrato",0,"Tp.Cont.Trab","Intermitente · Determinado","Indeterminado · Prazo determinado, definido em dias","cont","C",310,"Na Buk, intermitente é categoria, não tipo de contrato."],
+ ["Indicativo de Admissão",1,"—",null,"Normal","aus","I",2228,""],
+ ["Tipo de Admissão",1,"Tipo Admiss.","9B · 3A","Admissão · Transferência…","fmt","C",2228,"Códigos 3x, 1B, 2B e 2C a confirmar."],
+ ["Regime de Jornada",1,"Tp Reg.J.Tra","Submetidos a Horario de Trabalho","Sujeito a jornada de trabalho (Capítulo II do Título II da CLT)","fmt","C",2228,""],
+ ["Tipo de Jornada",1,"Turno Trab.","2","Jornada com horário diário fixo e folga fixa (no domingo)","aus","I",2228,"A SRA traz só o código do turno."],
+ ["Horas Semanais",1,"Hrs.Semanais","1","44","cont","S",19,"19 contratos não intermitentes com 1 hora semanal."],
+ ["Descrição da Jornada",1,"Turno Trab.","2","Seg a sex, 08:00 às 17:48","aus","I",2228,""],
+ ["Regime Previdenciário",1,"Tp Previden.","RGPS-Reg. Geral Previdência","Regime Geral de Previdência Social - RGPS","fmt","C",2228,""],
+ ["Contrato de Experiência",0,"D.1° Dt.Exp.","45","Sim","fmt","C",492,""],
+ ["Dias da Jornada",1,"—",null,"[\"l\",\"m\",\"w\",\"j\",\"v\"]","aus","I",2228,""],
+ ["Código Subárea",1,"Centro Custo","110233049","145","cont","C",88,"Códigos diferentes. Pela descrição, 88 ativos ficam sem correspondente."],
+ ["Cargo",1,"Cod. Funcao","196 · ELETRICISTA B","a195","cont","C",81,"Códigos diferentes. Pela descrição, 81 ativos ficam sem correspondente."],
+ ["Supervisor",1,"—",null,"CPF do gestor","aus","I",2228,""],
+ ["Adicional de Insalubridade",0,"Possui Insal","Insalubridade Máxima","Alta - 40%","fmt","C",0,""],
+ ["Adicional de Periculosidade",0,"Possui Per.","Sim","Sim","ok","-",0,""],
+ ["Salário",1,"Salário","0","2180.22","cont","S",12,"12 ativos não intermitentes com salário zerado."],
+ ["Tipo de Remuneração",1,"Tipo Pgto.","M","Fixo","cont","C",2228,"A SRA indica a periodicidade (mensal), não o tipo."],
+ ["Estado / Município de trabalho",0,"—",null,"Município onde presta serviço","aus","I",2228,"A SRA só traz o município de residência."],
+];
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const fmtN=n=>n?n.toLocaleString("pt-BR"):"—";
+const rows=DATA.filter(r=>r.length>1);
+// KPIs
+const c={ok:0,fmt:0,cont:0,aus:0};rows.forEach(r=>c[r[5]]++);
+const kd={ok:"vão direto para a Buk",fmt:"dado certo, formato diferente",cont:"dado cortado, incompleto ou inconsistente",aus:"informação precisa vir de outra fonte"};
+document.getElementById("kpis").innerHTML=["ok","fmt","cont","aus"].map(k=>`<div class="kpi ${k}"><span class="n">${c[k]}</span><span class="l">${ST[k]}</span><span class="d">${kd[k]}</span></div>`).join("");
+const col={ok:"var(--ok)",fmt:"var(--fmt)",cont:"var(--cont)",aus:"var(--aus)"};
+document.getElementById("bar").innerHTML=["ok","fmt","cont","aus"].map(k=>`<span style="width:${c[k]/rows.length*100}%;background:${col[k]}"></span>`).join("");
+// table
+const tb=document.getElementById("tb");
+function render(f){
+  tb.innerHTML=DATA.map(r=>{
+    if(r.length==1){return `<tr class="grp" data-g><td colspan="6">Importador ${esc(r[0])}</td></tr>`}
+    const [campo,req,sra,vem,esp,st,sol,n,nota]=r;
+    if(f!=="all"&&st!==f)return "";
+    const from=vem===null?`<span class="empty-sra">não existe</span>`:`<span class="v ${st==="ok"?"new":"old"}">${esc(vem)}</span>`;
+    return `<tr><td><span class="campo">${esc(campo)}</span>${req?'<span class="req">*</span>':''}</td>
+      <td class="col">${esc(sra)}</td>
+      <td><div class="flow">${from}<span class="arrow">→</span><span class="v new">${esc(esp)}</span></div>${nota?`<p class="nota">${esc(nota)}</p>`:""}</td>
+      <td><span class="pill ${st}">${ST[st]}</span></td>
+      <td class="sol">${SOL[sol]}</td>
+      <td class="num">${fmtN(n)}</td></tr>`}).join("");
+}
+render("all");
+document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+  b.setAttribute("aria-pressed","true");render(b.dataset.f);
+}));
+// solutions
+const SD={
+ R:["Datas no formato ano-mês-dia","Município completo, com acento (ou código IBGE)","Nome completo em vez do nome de 30 caracteres","Logradouro sem o tipo; órgão emissor e UF separados","Celular com DDI e DDD em um só campo"],
+ C:["Sexo, estado civil, escolaridade, deficiência","Nacionalidade, país, UF, categoria eSocial","Tipo de admissão, contrato, regime e remuneração","Filial → empresa, centro de custo → subárea, cargo"],
+ S:["Municípios com erro ou desatualizados","Número do endereço, CEP e PIS faltantes","Salário zerado e 1 hora semanal","Cláusula assecuratória em contrato indeterminado"],
+ I:["E-mail corporativo","Supervisor de cada colaborador","Tipo, descrição e dias da jornada por turno","Múltiplos vínculos, indicativo de admissão e local de trabalho"]};
+document.getElementById("sols").innerHTML=["R","C","S","I"].map(k=>{
+  const n=rows.filter(r=>r[6]===k).length;
+  return `<div class="sol-card"><h3>${SOL[k]}</h3><span class="count">${n} campos</span><ul>${SD[k].map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`}).join("");
+</script>
+</body>
+</html>
