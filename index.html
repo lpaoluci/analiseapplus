@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>De-para SRA × Buk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -36,7 +36,7 @@
   --old:#F08A7A; --new:#4FC2BC;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5}
 .wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
 h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
@@ -100,6 +100,27 @@ tr.grp td{background:var(--bg);font-family:var(--display);font-weight:700;font-s
 .nota{font-size:12.5px;color:var(--muted);margin-top:6px}
 .empty-sra{font-family:var(--mono);font-size:12.5px;color:var(--aus);font-style:italic}
 
+/* filtros agrupados + valores */
+.fgroups{display:flex;flex-direction:column;gap:10px}
+.fg{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fg-l{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:118px}
+.vcount{font-size:13px;color:var(--muted)} .vcount b{color:var(--ink);font-variant-numeric:tabular-nums}
+.kind{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.kind.lista{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+details.vals{margin-top:8px}
+details.vals summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--accent)}
+details.vals summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vt{width:100%;min-width:0;border-collapse:collapse;margin-top:6px;font-size:12.5px}
+.vt td,.vt th{padding:5px 8px;border-bottom:1px dashed var(--line);position:static;background:transparent}
+.vt th{font-size:10px}
+.vt td.m{font-family:var(--mono);font-size:12px}
+.vt td.q{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.b{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.b.igual{background:var(--ok-bg);color:var(--ok)} .b.acento,.b.conv,.b.texto{background:var(--fmt-bg);color:var(--fmt)}
+.b.sem,.b.confirmar{background:var(--cont-bg);color:var(--cont)} .b.vazio{background:var(--aus-bg);color:var(--aus)}
+.bate{font-size:11.5px;font-weight:600;margin-top:6px;display:block}
+.bate.s{color:var(--ok)} .bate.n{color:var(--cont)}
+
 /* solutions */
 .sols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .sol-card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
@@ -109,9 +130,10 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 @media (max-width:900px){.kpis,.sols{grid-template-columns:repeat(2,1fr)}.ba{grid-template-columns:1fr}}
 @media (max-width:480px){.kpis,.sols{grid-template-columns:1fr}}
-@media print{.filters{display:none}.wrap{padding-block:16px}.tbl-wrap{overflow:visible}table{min-width:0}th{position:static}tr{break-inside:avoid}section{break-inside:auto}}
+@media print{.filters,.fgroups{display:none}.wrap{padding-block:16px}.tbl-wrap{overflow:visible}table{min-width:0}th{position:static}tr{break-inside:avoid}section{break-inside:auto}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<style>html,body{margin:0}</style>
 </head>
 <body>
 <div class="wrap">
@@ -170,14 +192,21 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
       <span><i class="dot" style="background:var(--fmt)"></i>Ajuste de formato: dado certo, formato diferente</span>
       <span><i class="dot" style="background:var(--cont)"></i>Divergência de conteúdo: dado incompleto, cortado ou inconsistente</span>
       <span><i class="dot" style="background:var(--aus)"></i>Não existe na SRA</span>
-      <span><b class="req">*</b> obrigatório na Buk</span>
+      <span><b class="req">*</b> obrigatório na Buk</span><span><b style="color:var(--accent)">LISTA</b> = na Buk o valor é escolhido de uma lista fechada; clique em “ver valores” para comparar item a item</span>
     </div>
-    <div class="filters" role="group" aria-label="Filtrar por situação">
-      <button class="chip" id="f-all" data-f="all" aria-pressed="true">Todos</button>
-      <button class="chip" id="f-fmt" data-f="fmt" aria-pressed="false">Ajuste de formato</button>
-      <button class="chip" id="f-cont" data-f="cont" aria-pressed="false">Divergência de conteúdo</button>
-      <button class="chip" id="f-aus" data-f="aus" aria-pressed="false">Não existe na SRA</button>
-      <button class="chip" id="f-ok" data-f="ok" aria-pressed="false">Compatível</button>
+    <div class="fgroups">
+      <div class="fg" role="group" aria-label="Comparação"><span class="fg-l">Comparação</span>
+        <button class="chip" id="c-all" data-g="cmp" data-v="all" aria-pressed="false">Todos</button>
+        <button class="chip" id="c-n" data-g="cmp" data-v="n" aria-pressed="true">Não bate com a Buk</button>
+        <button class="chip" id="c-s" data-g="cmp" data-v="s" aria-pressed="false">Bate 100%</button></div>
+      <div class="fg" role="group" aria-label="Tipo de campo"><span class="fg-l">Tipo de campo na Buk</span>
+        <button class="chip" id="t-all" data-g="tipo" data-v="all" aria-pressed="true">Todos</button>
+        <button class="chip" id="t-l" data-g="tipo" data-v="l" aria-pressed="false">Lista de dados</button>
+        <button class="chip" id="t-a" data-g="tipo" data-v="a" aria-pressed="false">Campo aberto</button></div>
+      <div class="fg" role="group" aria-label="Obrigatoriedade"><span class="fg-l">Obrigatoriedade</span>
+        <button class="chip" id="o-all" data-g="obr" data-v="all" aria-pressed="true">Todos</button>
+        <button class="chip" id="o-s" data-g="obr" data-v="s" aria-pressed="false">Só obrigatórios</button></div>
+      <p class="vcount" id="vcount"></p>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -261,6 +290,40 @@ const DATA=[
  ["Tipo de Remuneração",1,"Tipo Pgto.","M","Fixo","cont","C",2228,"A SRA indica a periodicidade (mensal), não o tipo."],
  ["Estado / Município de trabalho",0,"—",null,"Município onde presta serviço","aus","I",2228,"A SRA só traz o município de residência."],
 ];
+// Comparação item a item das listas: [valor SRA, ativos, valor Buk, tipo]
+// tipo: igual | acento (só acento/maiúsculas) | conv (código → texto) | texto (texto diferente) | sem (sem equivalente) | confirmar | vazio
+const VALS={
+ "Gênero":[["Masculino",null,"M","conv"],["Feminino",null,"F","conv"]],
+ "Raça/Cor":[["Parda",null,"Parda","igual"],["Branca",null,"Branca","igual"],["Preta",null,"Preta","igual"],["Não informado",null,"Não informado","igual"],["Amarela",null,"Amarela","igual"]],
+ "Grau de Instrução":[["45",1600,"Ensino médio completo","conv"],["50",249,"Educação superior incompleta","conv"],["55",198,"Educação superior completa","conv"],["40",91,"Ensino médio incompleto","conv"],["85",30,"Doutorado completo?","confirmar"],["35",26,"Ensino fundamental completo","conv"],["30",26,"Do 6º ao 9º ano do ensino fundamental incompleto","conv"],["10",4,"Analfabeto","conv"],["65",3,"Pós-graduação ou Mestrado?","confirmar"],["25",1,"5º ano completo do ensino fundamental","conv"]],
+ "Tipos de deficiência":[["Nao é portador de deficiência",2192,"(campo vazio)","vazio"],["Intelectual (Mental)",20,"Mental ou Intelectual?","confirmar"],["Fisica",8,"Física","acento"],["Auditiva",4,"Auditiva","igual"],["Visual",4,"Visual","igual"]],
+ "Nacionalidade":[["10",2216,"BR","conv"],["40",7,"HT (Haiti)?","confirmar"],["97",2,"CO (Colômbia)?","confirmar"],["21",1,"AR (Argentina)?","confirmar"],["42",1,"CN (China)?","confirmar"],["24",1,"PY (Paraguai)?","confirmar"]],
+ "País de Nascimento":[["1058",2209,"BR","conv"],["3417",6,"HT (Haiti)","conv"],["1694",2,"CO (Colômbia)","conv"],["639",1,"AR (Argentina)","conv"],["1600",1,"CN (China)","conv"],["5860",1,"PY (Paraguai)","conv"],["(vazio)",8,"—","sem"]],
+ "Estado Civil":[["S",1423,"Solteiro","conv"],["C",670,"Casado","conv"],["D",67,"Divorciado","conv"],["M",56,"sem opção equivalente","sem"],["V",8,"Viúvo","conv"],["Q",4,"Separado","conv"]],
+ "Tipo de Logradouro":[["R",1892,"R - Rua","igual"],["AV",167,"AV - Avenida","igual"],["TV",32,"TV - Travessa","igual"],["EST",30,"EST - Estrada","igual"],["ST",17,"ST - Setor","igual"],["V",15,"V - Via","igual"],["SIT",10,"SIT - Sítio","igual"],["VL",7,"VL - Vila","igual"],["+ 23 siglas",53,"todas existem na lista Buk","igual"],["(vazio)",12,"—","sem"]],
+ "Estado":[["RJ, GO, CE, MT, BA… (25 UFs)",2220,"RJ - Rio de Janeiro, GO - Goiás…","conv"],["(vazio)",8,"—","sem"]],
+ "Município":[["Rio de Janeiro, Campos dos Goytacazes…",67,"mesmo nome","igual"],["MACAE, CUIABA, FORMOSA…",2074,"Macaé, Cuiabá, Formosa…","acento"],["SAO FRANCISCO DE ITA (cortado)",null,"São Francisco de Itabapoana","sem"],["BELO HORIZNOTE (erro)",null,"Belo Horizonte","sem"],["ITAPAGE (nome antigo)",51,"Itapajé","sem"],["Total sem equivalente",79,"—","sem"]],
+ "Órgão Emissor do RG":[["DIC/RJ",542,"DIC (+ UF à parte)","texto"],["SSP/CE, SSP/GO, SSP/MT…",null,"SSP (+ UF à parte)","texto"],["DET/RJ",68,"DETRAN?","confirmar"],["DGP/GO, DGP/MG",78,"DGPC?","confirmar"],["SPT, SSD, PCC, DTR, DPC…",null,"sem sigla equivalente","sem"],["/",58,"—","sem"]],
+ "UF Emissora do RG":[["RJ, GO, CE…",null,"RJ - Rio de Janeiro…","conv"],["(vazio)",83,"—","sem"]],
+ "UF Emissora da CTPS":[["RJ, GO, CE…",null,"RJ - Rio de Janeiro…","conv"],["(vazio)",831,"—","sem"]],
+ "Empresa (nome ou CNPJ)":[["100",572,"100 Qualitec - Matriz","conv"],["108",572,"108 - Qualitec - Filial GO","conv"],["400",533,"400 K2 DO BRASIL","conv"],["111",363,"111 - QUALITEC MT","conv"],["104",103,"104 Qualitec - Macae","conv"],["106",44,"106 - Qualitec - Filial RJ","conv"],["113",35,"113 - Qualitec","conv"],["102",6,"filial não cadastrada","sem"]],
+ "Cláusula assecuratória":[["Sim (contrato determinado)",null,"Sim","igual"],["Sim (indeterminado/intermitente)",2126,"(campo vazio)","vazio"]],
+ "Categoria do trabalhador":[["101",1903,"Empregado - Geral…","conv"],["111",226,"Empregado - Contrato de trabalho intermitente","conv"],["103",50,"Empregado - Aprendiz","conv"],["901",37,"Empregado - Estagiário","conv"],["701",12,"Contribuinte individual?","confirmar"]],
+ "Tipo de Contrato":[["Indeterminado",1918,"Indeterminado","igual"],["Intermitente",226,"não existe como tipo (usar Indeterminado)","sem"],["Determinado",84,"Prazo determinado, definido em dias","texto"]],
+ "Tipo de Admissão":[["9B",1964,"Admissão?","confirmar"],["9C",210,"Admissão?","confirmar"],["9A",9,"Admissão?","confirmar"],["3A",22,"Transferência (qual tipo?)","confirmar"],["3B",9,"Transferência (qual tipo?)","confirmar"],["3C",9,"Transferência (qual tipo?)","confirmar"],["1B",3,"?","confirmar"],["2B",1,"?","confirmar"],["2C",1,"?","confirmar"]],
+ "Regime de Jornada":[["Submetidos a Horario de Trabalho",2222,"Sujeito a jornada de trabalho (Capítulo II do Título II da CLT)","texto"],["Funções especificadas",6,"Função prevista no inciso II do artigo 62 da CLT?","confirmar"]],
+ "Regime Previdenciário":[["RGPS-Reg. Geral Previdência",null,"Regime Geral de Previdência Social - RGPS","texto"]],
+ "Contrato de Experiência":[["45",353,"Sim","conv"],["30",97,"Sim","conv"],["60",42,"Sim","conv"],["0",1736,"(campo vazio)","vazio"]],
+ "Código Subárea":[["Código CC TOTVS (ex.: 110233049)",0,"código Buk diferente (ex.: 145)","conv"],["Mesma descrição + filial",2140,"encontrada na Buk","conv"],["Descrição sem correspondente",88,"—","sem"]],
+ "Cargo":[["Código TOTVS (ex.: 196)",0,"código Buk diferente (ex.: a195)","conv"],["Mesma descrição",2147,"encontrado na Buk","conv"],["Descrição sem correspondente",81,"—","sem"]],
+ "Adicional de Insalubridade":[["Não",null,"Não","igual"],["Insalubridade Máxima",null,"Alta - 40%","texto"]],
+ "Adicional de Periculosidade":[["Sim",null,"Sim","igual"],["Não",null,"Não","igual"]],
+ "Tipo de Remuneração":[["M (mensal)",2228,"Fixo, Misto ou Variável","sem"]]
+};
+const LISTA_SEM_SRA=new Set(["Múltiplos Vínculos","Indicativo de Admissão","Tipo de Jornada","Dias da Jornada","Estado / Município de trabalho"]);
+const VL={igual:"Igual",acento:"Só acento/maiúsc.",conv:"Código → texto",texto:"Texto diferente",sem:"Sem equivalente",confirmar:"A confirmar",vazio:"Enviar vazio"};
+const isLista=r=>!!VALS[r[0]]||LISTA_SEM_SRA.has(r[0]);
+const bate=r=>r[5]==="ok"&&(!VALS[r[0]]||VALS[r[0]].every(v=>v[3]==="igual"||(v[3]==="sem"&&v[0]==="(vazio)")));
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmtN=n=>n?n.toLocaleString("pt-BR"):"—";
 const rows=DATA.filter(r=>r.length>1);
@@ -272,23 +335,43 @@ const col={ok:"var(--ok)",fmt:"var(--fmt)",cont:"var(--cont)",aus:"var(--aus)"};
 document.getElementById("bar").innerHTML=["ok","fmt","cont","aus"].map(k=>`<span style="width:${c[k]/rows.length*100}%;background:${col[k]}"></span>`).join("");
 // table
 const tb=document.getElementById("tb");
-function render(f){
-  tb.innerHTML=DATA.map(r=>{
-    if(r.length==1){return `<tr class="grp" data-g><td colspan="6">Importador ${esc(r[0])}</td></tr>`}
-    const [campo,req,sra,vem,esp,st,sol,n,nota]=r;
-    if(f!=="all"&&st!==f)return "";
-    const from=vem===null?`<span class="empty-sra">não existe</span>`:`<span class="v ${st==="ok"?"new":"old"}">${esc(vem)}</span>`;
-    return `<tr><td><span class="campo">${esc(campo)}</span>${req?'<span class="req">*</span>':''}</td>
-      <td class="col">${esc(sra)}</td>
-      <td><div class="flow">${from}<span class="arrow">→</span><span class="v new">${esc(esp)}</span></div>${nota?`<p class="nota">${esc(nota)}</p>`:""}</td>
-      <td><span class="pill ${st}">${ST[st]}</span></td>
-      <td class="sol">${SOL[sol]}</td>
-      <td class="num">${fmtN(n)}</td></tr>`}).join("");
+const F={cmp:"n",tipo:"all",obr:"all"};
+function passa(r){
+  if(F.cmp!=="all"&&(bate(r)?"s":"n")!==F.cmp)return false;
+  if(F.tipo!=="all"&&(isLista(r)?"l":"a")!==F.tipo)return false;
+  if(F.obr==="s"&&!r[1])return false;
+  return true;
 }
-render("all");
-document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed","false"));
-  b.setAttribute("aria-pressed","true");render(b.dataset.f);
+function valsHtml(c){
+  const v=VALS[c];if(!v)return "";
+  const nb=v.filter(x=>x[3]!=="igual").length;
+  return `<details class="vals"><summary>Ver os ${v.length} valores (${nb} não batem)</summary><table class="vt"><thead><tr><th>Valor na SRA</th><th style="text-align:right">Ativos</th><th>Valor na lista Buk</th><th>Resultado</th></tr></thead><tbody>${
+    v.map(x=>`<tr><td class="m">${esc(x[0])}</td><td class="q">${x[1]==null?"—":fmtN(x[1])}</td><td>${esc(x[2])}</td><td><span class="b ${x[3]}">${VL[x[3]]}</span></td></tr>`).join("")}</tbody></table></details>`;
+}
+function render(){
+  let html="",grp=null,n=0,nl=0;
+  DATA.forEach(r=>{
+    if(r.length==1){grp=r[0];return}
+    if(!passa(r))return;
+    if(grp){html+=`<tr class="grp"><td colspan="6">Importador ${esc(grp)}</td></tr>`;grp=null}
+    n++;if(isLista(r))nl++;
+    const [campo,req,sra,vem,esp,st,sol,q,nota]=r;
+    const from=vem===null?`<span class="empty-sra">não existe</span>`:`<span class="v ${st==="ok"?"new":"old"}">${esc(vem)}</span>`;
+    const b=bate(r);
+    html+=`<tr><td><span class="campo">${esc(campo)}</span>${req?'<span class="req">*</span>':''}<br><span class="kind ${isLista(r)?"lista":""}">${isLista(r)?"Lista":"Campo aberto"}</span></td>
+      <td class="col">${esc(sra)}</td>
+      <td><div class="flow">${from}<span class="arrow">→</span><span class="v new">${esc(esp)}</span></div>${nota?`<p class="nota">${esc(nota)}</p>`:""}${valsHtml(campo)}</td>
+      <td><span class="pill ${st}">${ST[st]}</span><span class="bate ${b?"s":"n"}">${b?"Bate 100%":"Não bate"}</span></td>
+      <td class="sol">${SOL[sol]}</td>
+      <td class="num">${fmtN(q)}</td></tr>`;
+  });
+  tb.innerHTML=html||`<tr><td colspan="6" class="nota">Nenhum campo com esses filtros.</td></tr>`;
+  document.getElementById("vcount").innerHTML=`Exibindo <b>${n}</b> campos, dos quais <b>${nl}</b> são listas de dados na Buk.`;
+}
+render();
+document.querySelectorAll(".fgroups .chip").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(`.chip[data-g="${b.dataset.g}"]`).forEach(x=>x.setAttribute("aria-pressed","false"));
+  b.setAttribute("aria-pressed","true");F[b.dataset.g]=b.dataset.v;render();
 }));
 // solutions
 const SD={
